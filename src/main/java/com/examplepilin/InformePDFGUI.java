@@ -4,6 +4,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -20,6 +21,9 @@ import javax.swing.SwingUtilities;
 
 import com.itextpdf.text.Document;
 import com.itextpdf.text.DocumentException;
+import com.itextpdf.text.Element;
+import com.itextpdf.text.Font;
+import com.itextpdf.text.Image;
 import com.itextpdf.text.Paragraph;
 import com.itextpdf.text.pdf.PdfWriter;
 
@@ -62,32 +66,69 @@ public class InformePDFGUI extends JFrame {
         setLocationRelativeTo(null);
     }
 
-    private void generarInformePDF() {
-        Document document = new Document();
+// ...
+// ...
 
-        try {
-            PdfWriter.getInstance(document, new FileOutputStream("InformeServicios.pdf"));
-            document.open();
+private void generarInformePDF() {
+    Document document = new Document();
 
-            // Título del informe
-            document.add(new Paragraph("Informe de Servicios Disponibles"));
+    try {
+        PdfWriter.getInstance(document, new FileOutputStream("InformeServicios.pdf"));
+        document.open();
 
-            // Obtener información de la base de datos y agregarla al PDF
-            List<Servicio> servicios = obtenerServiciosDesdeBD();
-            for (Servicio servicio : servicios) {
-                document.add(new Paragraph("Nombre del Servicio: " + servicio.getNombre()));
-                document.add(new Paragraph("Descripción: " + servicio.getDescripcion()));
-                document.add(new Paragraph("Precio: " + servicio.getPrecio()));
-                document.add(new Paragraph("---------------------------------------------"));
-            }
+        // Crear un párrafo para la imagen y el título
+        Paragraph titleAndImage = new Paragraph();
 
-            document.close();
-            JOptionPane.showMessageDialog(this, "Informe de Servicios Disponibles generado exitosamente.");
-        } catch (DocumentException | FileNotFoundException e) {
-            e.printStackTrace();
-            JOptionPane.showMessageDialog(this, "Error al generar el informe de Servicios Disponibles.", "Error", JOptionPane.ERROR_MESSAGE);
+        // Añadir la imagen al párrafo
+        String imagePath = "logo.png";
+        Image image = Image.getInstance(getClass().getClassLoader().getResource(imagePath));
+        image.setAlignment(Element.ALIGN_LEFT);
+        image.scaleAbsolute(100, 100); // ajusta el tamaño de la imagen según tus necesidades
+
+        // Añadir espacio entre la imagen y el título
+        titleAndImage.add(image);
+
+        // Añadir el título en negrita y un poco más grande al párrafo
+        Font titleFont = new Font(Font.FontFamily.TIMES_ROMAN, 18, Font.BOLD);
+        Paragraph title = new Paragraph("Informe de Servicios Disponibles", titleFont);
+        title.setAlignment(Element.ALIGN_CENTER);
+        titleAndImage.add(title);
+
+        // Añadir el párrafo al documento
+        document.add(titleAndImage);
+
+        // Separador
+        document.add(new Paragraph(" "));
+        document.add(new Paragraph(" "));
+        document.add(new Paragraph("---------------------------------------------"));
+
+        // Obtener información de la base de datos y agregarla al PDF
+        List<Servicio> servicios = obtenerServiciosDesdeBD();
+        for (Servicio servicio : servicios) {
+            document.add(new Paragraph("Nombre del Servicio: " + servicio.getNombre()));
+            document.add(new Paragraph("Descripción: " + servicio.getDescripcion()));
+            document.add(new Paragraph("Precio: " + servicio.getPrecio()));
+            document.add(new Paragraph("---------------------------------------------"));
         }
+
+        document.close();
+        JOptionPane.showMessageDialog(this, "Informe de Servicios Disponibles generado exitosamente.");
+    } catch (DocumentException | FileNotFoundException e) {
+        e.printStackTrace();
+        JOptionPane.showMessageDialog(this, "Error al generar el informe de Servicios Disponibles.", "Error", JOptionPane.ERROR_MESSAGE);
+    } catch (IOException e) {
+        e.printStackTrace();
     }
+}
+
+// ...
+
+
+
+
+
+
+
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(new Runnable() {
